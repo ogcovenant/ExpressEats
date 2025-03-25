@@ -4,6 +4,7 @@ import cors from "cors";
 import logger from "./utils/logger";
 import Redis from "ioredis";
 import { RateLimiterRedis } from "rate-limiter-flexible";
+import responseObject from "./helpers/response-object.helper";
 
 const app = express();
 
@@ -17,8 +18,28 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-const redisClient = new Redis(process.env.REDIS_URL as string); 
+const redisClient = new Redis(process.env.REDIS_URL as string);
 
+const rateLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "middleware",
+  points: 10,
+  duration: 1,
+});
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  rateLimiter
+    .consume(<string>req.ip)
+    .then(() => next())
+    .catch(() => {
+      logger.warn(`Rate limit exceeded for ${req.ip}`);
+      res.status(429).json(
+        responseObject({
+          success: false,
+          message: "Too many requests",
+        })
+      );
+    });
+});
 
 export default app;

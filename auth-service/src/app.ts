@@ -5,6 +5,8 @@ import logger from "./utils/logger";
 import Redis from "ioredis";
 import { RateLimiterRedis } from "rate-limiter-flexible";
 import responseObject from "./helpers/response-object.helper";
+import rateLimit from "express-rate-limit";
+import RedisStore, { RedisReply } from "rate-limit-redis";
 
 const app = express();
 
@@ -41,5 +43,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       );
     });
 });
+
+const specificEndpointLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({
+    sendCommand: (...args: [string, ...string[]]) =>
+      redisClient.call(...args) as unknown as Promise<RedisReply>,
+  }),
+});
+
+app.use("/api/auth/register", specificEndpointLimiter);
 
 export default app;

@@ -60,7 +60,7 @@ app.use("/api/auth/register", specificEndpointLimiter);
 
 app.use("/api/auth", authRoutes);
 
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json(
     responseObject({
       success: false,

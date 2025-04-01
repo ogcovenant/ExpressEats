@@ -6,6 +6,7 @@ const responseObject = ({
   data,
   errors,
   accessToken,
+  refreshToken,
   pagination,
 }: ResponseObject) => {
   return {
@@ -14,6 +15,7 @@ const responseObject = ({
     data,
     errors,
     accessToken,
+    refreshToken,
     pagination,
   };
 };

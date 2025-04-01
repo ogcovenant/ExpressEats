@@ -4,6 +4,7 @@ export interface ResponseObject {
   data?: unknown;
   errors?: unknown;
   accessToken?: string;
+  refreshToken?: string;
   pagination?: {
     total: number;
     page: number;

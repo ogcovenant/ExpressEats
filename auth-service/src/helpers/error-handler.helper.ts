@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import logger from "../utils/logger";
 import responseObject from "./response-object.helper";
 
-class APIError extends Error {
+export class APIError extends Error {
   statusCode: number;
 
   constructor(message: string, statusCode: number) {

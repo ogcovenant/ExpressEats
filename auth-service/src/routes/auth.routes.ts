@@ -5,13 +5,13 @@ import {
   refreshToken,
   register,
 } from "../controllers/auth.controller";
-import { asyncHandler } from "../helpers/error-handler.helper";
+// import { asyncHandler } from "../helpers/error-handler.helper";
 
 const router = Router();
 
-router.post("/register", asyncHandler(register));
-router.post("/login", asyncHandler(login));
-router.post("/refresh-token", asyncHandler(refreshToken));
-router.post("/logout", asyncHandler(logout));
+router.post("/register", register);
+router.post("/login", login);
+router.post("/refresh-token", refreshToken);
+router.post("/logout", logout);
 
 export default router;

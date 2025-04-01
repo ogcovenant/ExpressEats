@@ -7,6 +7,7 @@ import { RateLimiterRedis } from "rate-limiter-flexible";
 import responseObject from "./helpers/response-object.helper";
 import rateLimit from "express-rate-limit";
 import RedisStore, { RedisReply } from "rate-limit-redis";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -57,4 +58,15 @@ const specificEndpointLimiter = rateLimit({
 
 app.use("/api/auth/register", specificEndpointLimiter);
 
+app.use("/api/auth", authRoutes);
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json(
+    responseObject({
+      success: false,
+      message:
+        "Ooooops, like the resource you're trying to access does not exist",
+    })
+  );
+});
 export default app;

@@ -22,7 +22,7 @@ export const globalErrorhandler = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): any => {
   logger.error("An error occured:", err.stack);
 
   if (err instanceof APIError) {

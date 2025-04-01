@@ -8,6 +8,7 @@ import responseObject from "./helpers/response-object.helper";
 import rateLimit from "express-rate-limit";
 import RedisStore, { RedisReply } from "rate-limit-redis";
 import authRoutes from "./routes/auth.routes";
+import { globalErrorhandler } from "./helpers/error-handler.helper";
 
 const app = express();
 
@@ -59,6 +60,8 @@ const specificEndpointLimiter = rateLimit({
 app.use("/api/auth/register", specificEndpointLimiter);
 
 app.use("/api/auth", authRoutes);
+
+app.use(globalErrorhandler);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json(

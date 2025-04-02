@@ -10,5 +10,5 @@ export interface ILoginData {
 }
 
 export interface IRefreshTokenData {
-  refreshToken: string;
+  token: string;
 }

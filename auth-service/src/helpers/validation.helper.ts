@@ -26,7 +26,7 @@ export const validateLogin = (data: ILoginData) => {
 
 export const validateRefreshToken = (data: IRefreshTokenData) => {
   const schema = Joi.object({
-    refreshToken: Joi.string().email().required(),
+    token: Joi.string().required(),
   });
 
   return schema.validate(data);

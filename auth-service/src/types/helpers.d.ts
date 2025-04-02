@@ -1,6 +1,6 @@
 export interface ResponseObject {
-  message: string;
   success: boolean;
+  message?: string;
   data?: unknown;
   errors?: unknown;
   accessToken?: string;

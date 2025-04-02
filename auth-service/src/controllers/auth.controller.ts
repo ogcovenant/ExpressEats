@@ -3,11 +3,13 @@ import logger from "../utils/logger";
 // import { APIError } from "../helpers/error-handler.helper";
 import {
   validateLogin,
+  validateRefreshToken,
   validateRegistration,
 } from "../helpers/validation.helper";
 import { User } from "../models/user";
 import responseObject from "../helpers/response-object.helper";
 import { generateToken } from "../helpers/token.helper";
+import { RefreshToken } from "../models/refresh-token";
 
 export const register = async (req: Request, res: Response): Promise<any> => {
   logger.info("User registration endpoint hit.....");
@@ -120,7 +122,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     res.status(200).json(
       responseObject({
-        success: false,
+        success: true,
         message: "User login successful",
         accessToken,
         refreshToken,
@@ -138,6 +140,74 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {};
+export const refreshToken = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  logger.info("Refresh token endpoint hit....");
+
+  try {
+    const { error } = validateRefreshToken(req.body);
+
+    if (error) {
+      logger.warn("An invalid refresh token was passed...", error.details[0].message);
+
+      return res.status(400).json(
+        responseObject({
+          success: false,
+          message: error.details[0].message,
+        })
+      );
+    }
+
+    const { token } = req.body;
+
+    const storedToken = await RefreshToken.findOne({ token });
+
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      logger.warn("Invaid or expired refresh token....");
+
+      return res.status(401).json(
+        responseObject({
+          success: false,
+          message: "Invalid or expired token",
+        })
+      );
+    }
+
+    const user = await User.findById(storedToken.user);
+
+    if (!user) {
+      logger.warn("User associated with refresh token not found....");
+
+      return res.status(404).json(
+        responseObject({
+          success: false,
+          message: "User not found",
+        })
+      );
+    }
+
+    await RefreshToken.deleteOne({ id: storedToken._id })
+
+    const { accessToken, refreshToken } = await generateToken(user);
+
+    return res.status(200).json(responseObject({
+      success: true,
+      accessToken,
+      refreshToken
+    }))
+
+  } catch (err) {
+    logger.error("An error occured in the refresh token endpoint....", err);
+
+    return res.status(500).json(
+      responseObject({
+        success: false,
+        message: "An unexpected error occured",
+      })
+    );
+  }
+};
 
 export const logout = async (req: Request, res: Response) => {};

@@ -150,7 +150,10 @@ export const refreshToken = async (
     const { error } = validateRefreshToken(req.body);
 
     if (error) {
-      logger.warn("An invalid refresh token was passed...", error.details[0].message);
+      logger.warn(
+        "An invalid refresh token was passed...",
+        error.details[0].message
+      );
 
       return res.status(400).json(
         responseObject({
@@ -188,16 +191,17 @@ export const refreshToken = async (
       );
     }
 
-    await RefreshToken.deleteOne({ id: storedToken._id })
+    await RefreshToken.deleteOne({ id: storedToken._id });
 
     const { accessToken, refreshToken } = await generateToken(user);
 
-    return res.status(200).json(responseObject({
-      success: true,
-      accessToken,
-      refreshToken
-    }))
-
+    return res.status(200).json(
+      responseObject({
+        success: true,
+        accessToken,
+        refreshToken,
+      })
+    );
   } catch (err) {
     logger.error("An error occured in the refresh token endpoint....", err);
 
@@ -210,4 +214,56 @@ export const refreshToken = async (
   }
 };
 
-export const logout = async (req: Request, res: Response) => {};
+export const logout = async (req: Request, res: Response): Promise<any> => {
+  logger.info("Logout endpoint hit....");
+
+  try {
+    const { error } = validateRefreshToken(req.body);
+    if (error) {
+      logger.warn(
+        "An invalid refresh token was passed...",
+        error.details[0].message
+      );
+
+      return res.status(400).json(
+        responseObject({
+          success: false,
+          message: error.details[0].message,
+        })
+      );
+    }
+
+    const { token } = req.body;
+
+    const storedToken = await RefreshToken.findOneAndDelete({
+      token,
+    });
+
+    if (!storedToken) {
+      logger.warn("Invalid refresh token provided");
+      return res.status(400).json(
+        responseObject({
+          success: false,
+          message: "Invalid refresh token",
+        })
+      );
+    }
+    logger.info("Refresh token deleted for logout");
+
+    res.status(200).json(
+      responseObject({
+        success: true,
+        message: "Logged out successfully!",
+      })
+    );
+  } catch (err) {
+    logger.error("An error occured in the logout endpoint....", err);
+
+    return res.status(500).json(
+      responseObject({
+        success: false,
+        message: "An unexpected error occured",
+      })
+    );
+  }
+};
